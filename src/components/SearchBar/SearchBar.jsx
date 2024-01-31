@@ -1,6 +1,6 @@
 import { Component } from 'react';
 import PropTypes from 'prop-types';
-import * as Styled from './styled';
+import { StyledHeader, SearchFrom, StyledButton } from './styled';
 
 class SearchBar extends Component {
   static propTypes = {
@@ -18,8 +18,8 @@ class SearchBar extends Component {
 
   render() {
     return (
-      <Styled.StyledHeader>
-        <Styled.SearchFrom onSubmit={this.handleSubmit}>
+      <StyledHeader>
+        <SearchFrom onSubmit={this.handleSubmit}>
           <input
             name="search"
             type="text"
@@ -28,9 +28,9 @@ class SearchBar extends Component {
             placeholder="Search images and photos"
           />
 
-          <Styled.StyledButton type="submit">Search</Styled.StyledButton>
-        </Styled.SearchFrom>
-      </Styled.StyledHeader>
+          <StyledButton type="submit">Search</StyledButton>
+        </SearchFrom>
+      </StyledHeader>
     );
   }
 }

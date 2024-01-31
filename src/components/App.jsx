@@ -1,5 +1,8 @@
 import { Component } from 'react';
 import SearchBar from './SearchBar/SearchBar';
+import ImageGallery from './ImageGallery/ImageGallery';
+import MainHeading from './MainHeading/MainHeading';
+import Container from './Container/Container';
 import axios from 'axios';
 
 const apiKey = '41284992-e3e58fe867fcadc7d8005ce00';
@@ -15,24 +18,27 @@ class App extends Component {
     filter: '',
   };
 
-  handleFromSubmit = async searchInput => {
+  handleFormSubmit = async searchInput => {
     this.setState(
       {
         filter: searchInput,
       },
-      this.getImages
+      () => {
+        this.getImages();
+      }
     );
-
-    // await this.getImages();
   };
 
-  getImages = async () => {
+  getImages = async (loadNextPage = false) => {
     console.log('Filter: ' + this.state.filter);
     this.setState({
       isLoading: true,
     });
 
-    const { currentPage, filter } = this.state;
+    const { filter } = this.state;
+    let { currentPage } = this.state;
+
+    currentPage = loadNextPage ? currentPage + 1 : currentPage;
 
     try {
       const searchParams = new URLSearchParams({
@@ -45,8 +51,28 @@ class App extends Component {
         per_page: photosPerPage,
       });
 
-      const data = await axios(`https://pixabay.com/api/?${searchParams}`);
-      console.log(data);
+      const { data } = await axios(`https://pixabay.com/api/?${searchParams}`);
+      console.log('data: ', data);
+      const images = data.hits.map(image => {
+        return {
+          id: image.id,
+          webformatURL: image.webformatURL,
+          largeImageURL: image.largeImageURL,
+          tags: image.tags,
+        };
+      });
+
+      if (loadNextPage) {
+        this.setState(prevState => ({
+          images: [...prevState.images, images],
+        }));
+      } else {
+        this.setState({
+          images,
+        });
+      }
+
+      console.log('images: ', images);
     } catch (error) {
       this.setState({
         error,
@@ -58,10 +84,10 @@ class App extends Component {
     }
   };
 
-  async componentDidMount() {
-    console.log('DidMount');
-    await this.getImages();
-  }
+  // async componentDidMount() {
+  //   console.log('DidMount');
+  //   await this.getImages();
+  // }
 
   // async componentDidUpdate() {
   //   console.log('DidUpdate');
@@ -69,7 +95,20 @@ class App extends Component {
   // }
 
   render() {
-    return <SearchBar onSubmit={this.handleFromSubmit} />;
+    const { images } = this.state;
+
+    return (
+      <>
+        <MainHeading>Image Gallery App</MainHeading>
+        <SearchBar onSubmit={this.handleFormSubmit} />
+        <main>
+          <section className="image-gallery-section"></section>
+          <Container>
+            <ImageGallery images={images} />
+          </Container>
+        </main>
+      </>
+    );
   }
 }
 
