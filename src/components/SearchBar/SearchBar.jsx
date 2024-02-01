@@ -12,7 +12,9 @@ class SearchBar extends Component {
 
     event.preventDefault();
     const searchText = event.target.elements.search.value;
-    console.log(searchText);
+
+    if (!searchText) return;
+
     onSubmit(searchText);
   };
 

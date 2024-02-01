@@ -3,28 +3,46 @@ import SearchBar from './SearchBar/SearchBar';
 import ImageGallery from './ImageGallery/ImageGallery';
 import MainHeading from './MainHeading/MainHeading';
 import Container from './Container/Container';
+import Button from './Button/Button';
 import axios from 'axios';
 
-const apiKey = '41284992-e3e58fe867fcadc7d8005ce00';
+const API_KEY = '41284992-e3e58fe867fcadc7d8005ce00';
 const photosPerPage = 12;
 
 class App extends Component {
   state = {
-    gallery: [],
+    images: [],
     isLoading: false,
     error: null,
     currentPage: 1,
-    numberOfPages: 0,
+    totalImages: 0,
     filter: '',
   };
 
   handleFormSubmit = async searchInput => {
+    const { filter } = this.state;
+
+    if (searchInput === filter) return;
+
     this.setState(
       {
         filter: searchInput,
+        currentPage: 1,
       },
       () => {
         this.getImages();
+      }
+    );
+  };
+
+  handleButtonClick = async () => {
+    this.setState(
+      prevState => {
+        return { currentPage: prevState.currentPage + 1 };
+      },
+      () => {
+        console.log('current page: ', this.state.currentPage);
+        this.getImages(true);
       }
     );
   };
@@ -35,24 +53,34 @@ class App extends Component {
       isLoading: true,
     });
 
-    const { filter } = this.state;
-    let { currentPage } = this.state;
-
-    currentPage = loadNextPage ? currentPage + 1 : currentPage;
+    const { currentPage, filter } = this.state;
+    console.log('current_page', currentPage);
 
     try {
       const searchParams = new URLSearchParams({
-        key: apiKey,
-        q: filter,
-        image_type: 'photo',
-        orientation: 'horizontal',
-        safesearch: true,
+        key: API_KEY,
         page: currentPage,
         per_page: photosPerPage,
+        image_type: 'photo',
+        orientation: 'horizontal',
+        q: filter,
+        // safesearch: true,
       });
 
-      const { data } = await axios(`https://pixabay.com/api/?${searchParams}`);
+      const datas = await axios(`https://pixabay.com/api/?${searchParams}`);
+      // console.log('axios data: ', datasss);
+      // const datass = await fetch(`https://pixabay.com/api/?${searchParams}`);
+      // const datas = await datass.json();
+
+      console.log('datas: ', datas);
+      const { data } = datas;
+      console.log(`https://pixabay.com/api/?${searchParams}`);
       console.log('data: ', data);
+
+      this.setState({
+        totalImages: data.total,
+      });
+
       const images = data.hits.map(image => {
         return {
           id: image.id,
@@ -62,9 +90,11 @@ class App extends Component {
         };
       });
 
+      console.log('images: ', images);
+
       if (loadNextPage) {
         this.setState(prevState => ({
-          images: [...prevState.images, images],
+          images: [...prevState.images, ...images],
         }));
       } else {
         this.setState({
@@ -78,9 +108,14 @@ class App extends Component {
         error,
       });
     } finally {
-      this.setState({
-        isLoading: false,
-      });
+      this.setState(
+        {
+          isLoading: false,
+        },
+        () => {
+          console.log('Final data: ', this.state.images);
+        }
+      );
     }
   };
 
@@ -95,17 +130,24 @@ class App extends Component {
   // }
 
   render() {
-    const { images } = this.state;
+    const { images, totalImages } = this.state;
+
+    const showLoadMoreButton = images.length > 0 && images.length < totalImages;
+    console.log('showLoadMoreButton: ', showLoadMoreButton);
 
     return (
       <>
         <MainHeading>Image Gallery App</MainHeading>
         <SearchBar onSubmit={this.handleFormSubmit} />
         <main>
-          <section className="image-gallery-section"></section>
-          <Container>
-            <ImageGallery images={images} />
-          </Container>
+          <section>
+            <Container>
+              <ImageGallery images={images} />
+              {showLoadMoreButton && (
+                <Button onClick={this.handleButtonClick}>Load more</Button>
+              )}
+            </Container>
+          </section>
         </main>
       </>
     );
