@@ -8,7 +8,7 @@
   --color-accent: #e7e9fc;
   --color-light: #f4f4fd;
   --color-white: #fff;
-
+  --color-modal-overlay: #2e2f4266;
   --transition-general: var(--animation-duration) var(--timing-function);
 }
 

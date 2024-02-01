@@ -4,6 +4,7 @@ import ImageGallery from './ImageGallery/ImageGallery';
 import MainHeading from './MainHeading/MainHeading';
 import Container from './Container/Container';
 import Button from './Button/Button';
+import Loader from './Loader/Loader';
 import axios from 'axios';
 
 const API_KEY = '41284992-e3e58fe867fcadc7d8005ce00';
@@ -13,6 +14,7 @@ class App extends Component {
   state = {
     images: [],
     isLoading: false,
+    isLoadingNew: false,
     error: null,
     currentPage: 1,
     totalImages: 0,
@@ -51,6 +53,7 @@ class App extends Component {
     console.log('Filter: ' + this.state.filter);
     this.setState({
       isLoading: true,
+      isLoadingNew: loadNextPage,
     });
 
     const { currentPage, filter } = this.state;
@@ -111,6 +114,7 @@ class App extends Component {
       this.setState(
         {
           isLoading: false,
+          isLoadingNew: false,
         },
         () => {
           console.log('Final data: ', this.state.images);
@@ -130,10 +134,10 @@ class App extends Component {
   // }
 
   render() {
-    const { images, totalImages } = this.state;
+    const { images, isLoading, isLoadingNew, totalImages } = this.state;
 
-    const showLoadMoreButton = images.length > 0 && images.length < totalImages;
-    console.log('showLoadMoreButton: ', showLoadMoreButton);
+    const showLoadMoreButton =
+      images.length > 0 && images.length < totalImages && !isLoading;
 
     return (
       <>
@@ -142,10 +146,11 @@ class App extends Component {
         <main>
           <section>
             <Container>
-              <ImageGallery images={images} />
+              {!isLoadingNew && <ImageGallery images={images} />}
               {showLoadMoreButton && (
                 <Button onClick={this.handleButtonClick}>Load more</Button>
               )}
+              {isLoading && <Loader />}
             </Container>
           </section>
         </main>
