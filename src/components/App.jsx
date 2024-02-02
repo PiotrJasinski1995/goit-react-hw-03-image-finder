@@ -8,6 +8,7 @@ import Button from './Button/Button';
 import Loader from './Loader/Loader';
 import Modal from './Modal/Modal';
 import ErrorInfo from './ErrorInfo/ErrorInfo';
+import Notiflix from 'notiflix';
 import axios from 'axios';
 
 const API_KEY = '41284992-e3e58fe867fcadc7d8005ce00';
@@ -134,7 +135,7 @@ class App extends Component {
         // safesearch: true,
       });
 
-      const datas = await axios(`https://pixabay.com/api/${searchParams}`);
+      const datas = await axios(`https://pixabay.com/api/?${searchParams}`);
       // console.log('axios data: ', datasss);
       // const datass = await fetch(`https://pixabay.com/api/?${searchParams}`);
       // const datas = await datass.json();
@@ -160,18 +161,54 @@ class App extends Component {
       console.log('images: ', images);
 
       if (loadNextPage) {
-        this.setState(prevState => {
-          const prevImages = [...prevState.images];
+        this.setState(
+          prevState => {
+            const prevImages = [...prevState.images];
 
-          return {
-            images: [...prevImages, ...images],
-            scrollImageIndex: prevImages.length,
-          };
-        });
+            return {
+              images: [...prevImages, ...images],
+              scrollImageIndex: prevImages.length,
+            };
+          },
+          () => {
+            const { images, totalImages } = this.state;
+            console.log('totalImages: ', totalImages);
+
+            if (images.length >= totalImages) {
+              Notiflix.Notify.info(
+                "We're sorry, but you've reached the end of search results."
+              );
+            }
+          }
+        );
       } else {
-        this.setState({
-          images,
-        });
+        this.setState(
+          {
+            images,
+          },
+          () => {
+            const { images, totalImages } = this.state;
+            const totalPhotos = totalImages;
+
+            if (totalPhotos <= 0) {
+              Notiflix.Notify.failure(
+                'Sorry, there are no images matching your search query. Please try again.'
+              );
+            } else {
+              const imageString = totalPhotos === 1 ? 'image' : 'images';
+
+              Notiflix.Notify.info(
+                `Hooray! We found ${totalPhotos} ${imageString}.`
+              );
+
+              if (images.length >= totalImages) {
+                Notiflix.Notify.info(
+                  "We're sorry, but you've reached the end of search results."
+                );
+              }
+            }
+          }
+        );
       }
 
       console.log('images: ', images);
