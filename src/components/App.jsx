@@ -7,6 +7,7 @@ import Container from './Container/Container';
 import Button from './Button/Button';
 import Loader from './Loader/Loader';
 import Modal from './Modal/Modal';
+import ErrorInfo from './ErrorInfo/ErrorInfo';
 import axios from 'axios';
 
 const API_KEY = '41284992-e3e58fe867fcadc7d8005ce00';
@@ -25,13 +26,18 @@ class App extends Component {
     scrollImageIndex: 0,
   };
 
-  componentDidUpdate() {
+  componentDidUpdate(prevProps, prevState) {
+    const prevImages = prevState.images;
     const { images, scrollImageIndex } = this.state;
     const gallery = document.querySelector('.gallery');
     //console.log('Child nodes: ', gallery.childNodes[9].getBoundingClientRect());
     console.log('ScrollImageIndex: ', scrollImageIndex);
 
-    if (images.length > 0 && scrollImageIndex > 0) {
+    if (
+      prevImages.length !== images.length &&
+      images.length > 0 &&
+      scrollImageIndex > 0
+    ) {
       console.log('scrollImageIndex did update: ', scrollImageIndex);
       gallery.childNodes[scrollImageIndex].scrollIntoView({
         behavior: 'smooth',
@@ -128,7 +134,7 @@ class App extends Component {
         // safesearch: true,
       });
 
-      const datas = await axios(`https://pixabay.com/api/?${searchParams}`);
+      const datas = await axios(`https://pixabay.com/api/${searchParams}`);
       // console.log('axios data: ', datasss);
       // const datass = await fetch(`https://pixabay.com/api/?${searchParams}`);
       // const datas = await datass.json();
@@ -170,9 +176,14 @@ class App extends Component {
 
       console.log('images: ', images);
     } catch (error) {
-      this.setState({
-        error,
-      });
+      this.setState(
+        {
+          error,
+        },
+        () => {
+          console.log('ERROR: ', error);
+        }
+      );
     } finally {
       this.setState(
         {
@@ -197,8 +208,14 @@ class App extends Component {
   // }
 
   render() {
-    const { images, isLoading, isLoadingNew, totalImages, selectedImage } =
-      this.state;
+    const {
+      images,
+      isLoading,
+      isLoadingNew,
+      error,
+      totalImages,
+      selectedImage,
+    } = this.state;
 
     const showLoadMoreButton = images.length > 0 && images.length < totalImages;
 
@@ -209,6 +226,9 @@ class App extends Component {
         <main>
           <section>
             <Container>
+              {error && (
+                <ErrorInfo>Something went wrong: {error.message}.</ErrorInfo>
+              )}
               {!isLoadingNew && (
                 <ImageGallery>
                   {images.map(image => {
