@@ -22,7 +22,27 @@ class App extends Component {
     totalImages: 0,
     filter: '',
     selectedImage: {},
+    scrollImageIndex: 0,
   };
+
+  componentDidUpdate() {
+    const { images, scrollImageIndex } = this.state;
+    const gallery = document.querySelector('.gallery');
+    //console.log('Child nodes: ', gallery.childNodes[9].getBoundingClientRect());
+    console.log('ScrollImageIndex: ', scrollImageIndex);
+
+    if (images.length > 0 && scrollImageIndex > 0) {
+      console.log('scrollImageIndex did update: ', scrollImageIndex);
+      gallery.childNodes[scrollImageIndex].scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      });
+    }
+  }
+
+  componentWillUnmount() {
+    document.removeEventListener('keydown', this.handleCloseModalKeydown);
+  }
 
   handleFormSubmit = async searchInput => {
     const { filter } = this.state;
@@ -43,13 +63,16 @@ class App extends Component {
   handleButtonClick = async () => {
     this.setState(
       prevState => {
-        return { currentPage: prevState.currentPage + 1 };
+        return { currentPage: prevState.currentPage + 1, scrollImageIndex: 0 };
       },
       () => {
         console.log('current page: ', this.state.currentPage);
         this.getImages(true);
       }
     );
+    // const y = gallery.childNodes[9].getBoundingClientRect().top - 15;
+
+    // gallery.childNodes[9].scrollTo({ top: y, behavior: 'smooth' });
   };
 
   handleModalClick = event => {
@@ -131,9 +154,14 @@ class App extends Component {
       console.log('images: ', images);
 
       if (loadNextPage) {
-        this.setState(prevState => ({
-          images: [...prevState.images, ...images],
-        }));
+        this.setState(prevState => {
+          const prevImages = [...prevState.images];
+
+          return {
+            images: [...prevImages, ...images],
+            scrollImageIndex: prevImages.length,
+          };
+        });
       } else {
         this.setState({
           images,
@@ -172,8 +200,7 @@ class App extends Component {
     const { images, isLoading, isLoadingNew, totalImages, selectedImage } =
       this.state;
 
-    const showLoadMoreButton =
-      images.length > 0 && images.length < totalImages && !isLoading;
+    const showLoadMoreButton = images.length > 0 && images.length < totalImages;
 
     return (
       <>

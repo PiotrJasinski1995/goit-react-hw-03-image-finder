@@ -1,6 +1,6 @@
 import { Component } from 'react';
 import PropTypes from 'prop-types';
-import { StyledImage } from './styled';
+import { StyledImage, StyledListElement } from './styled';
 
 class ImageGalleryItem extends Component {
   static defaultProps = {
@@ -27,9 +27,9 @@ class ImageGalleryItem extends Component {
     const { src, alt } = this.props;
 
     return (
-      <li onClick={this.handleImageClick}>
+      <StyledListElement onClick={this.handleImageClick}>
         <StyledImage src={src} alt={alt} loading="lazy" />
-      </li>
+      </StyledListElement>
     );
   }
 }
