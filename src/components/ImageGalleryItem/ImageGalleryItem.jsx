@@ -18,7 +18,6 @@ class ImageGalleryItem extends Component {
 
   handleImageClick = event => {
     const { srcLarge, alt, onClick } = this.props;
-    console.log('Image click event: ', event);
 
     onClick(srcLarge, alt);
   };

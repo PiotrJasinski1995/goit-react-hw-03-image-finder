@@ -13,16 +13,6 @@ class UpButton extends Component {
 
     onClick();
   };
-  //   handleClick = event => {
-  //     const { onSubmit } = this.props;
-
-  //     event.preventDefault();
-  //     const searchText = event.target.elements.search.value;
-
-  //     if (!searchText) return;
-
-  //     onSubmit(searchText);
-  //   };
 
   render() {
     return (

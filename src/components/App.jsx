@@ -31,15 +31,12 @@ class App extends Component {
     const prevImages = prevState.images;
     const { images, scrollImageIndex } = this.state;
     const gallery = document.querySelector('.gallery');
-    //console.log('Child nodes: ', gallery.childNodes[9].getBoundingClientRect());
-    console.log('ScrollImageIndex: ', scrollImageIndex);
 
     if (
       prevImages.length !== images.length &&
-      images.length > 0 &&
+      images.length > photosPerPage &&
       scrollImageIndex > 0
     ) {
-      console.log('scrollImageIndex did update: ', scrollImageIndex);
       gallery.childNodes[scrollImageIndex].scrollIntoView({
         behavior: 'smooth',
         block: 'start',
@@ -73,13 +70,9 @@ class App extends Component {
         return { currentPage: prevState.currentPage + 1, scrollImageIndex: 0 };
       },
       () => {
-        console.log('current page: ', this.state.currentPage);
         this.getImages(true);
       }
     );
-    // const y = gallery.childNodes[9].getBoundingClientRect().top - 15;
-
-    // gallery.childNodes[9].scrollTo({ top: y, behavior: 'smooth' });
   };
 
   handleModalClick = event => {
@@ -89,7 +82,6 @@ class App extends Component {
   };
 
   closeModal = () => {
-    console.log('fsdfdfDFSFSDF');
     this.setState({
       selectedImage: {},
     });
@@ -99,30 +91,24 @@ class App extends Component {
 
   handleImageClick = (src, tags) => {
     document.addEventListener('keydown', this.handleCloseModalKeydown);
-    console.log('src: ', src);
     this.setState({
       selectedImage: { src, tags },
     });
   };
 
   handleCloseModalKeydown = event => {
-    console.log('DFAFSF');
-    console.log(event);
     if (event.code === 'Escape') {
-      console.log('AAAAAAAAAA');
       this.closeModal();
     }
   };
 
   getImages = async (loadNextPage = false) => {
-    console.log('Filter: ' + this.state.filter);
+    const { currentPage, filter } = this.state;
+
     this.setState({
       isLoading: true,
       isLoadingNew: !loadNextPage,
     });
-
-    const { currentPage, filter } = this.state;
-    console.log('current_page', currentPage);
 
     try {
       const searchParams = new URLSearchParams({
@@ -132,18 +118,9 @@ class App extends Component {
         image_type: 'photo',
         orientation: 'horizontal',
         q: filter,
-        // safesearch: true,
       });
 
-      const datas = await axios(`https://pixabay.com/api/?${searchParams}`);
-      // console.log('axios data: ', datasss);
-      // const datass = await fetch(`https://pixabay.com/api/?${searchParams}`);
-      // const datas = await datass.json();
-
-      console.log('datas: ', datas);
-      const { data } = datas;
-      console.log(`https://pixabay.com/api/?${searchParams}`);
-      console.log('data: ', data);
+      const { data } = await axios(`https://pixabay.com/api/?${searchParams}`);
 
       this.setState({
         totalImages: data.total,
@@ -158,8 +135,6 @@ class App extends Component {
         };
       });
 
-      console.log('images: ', images);
-
       if (loadNextPage) {
         this.setState(
           prevState => {
@@ -172,12 +147,9 @@ class App extends Component {
           },
           () => {
             const { images, totalImages } = this.state;
-            console.log('totalImages: ', totalImages);
 
             if (images.length >= totalImages) {
-              Notiflix.Notify.info(
-                "We're sorry, but you've reached the end of search results."
-              );
+              Notiflix.Notify.info("You've reached the end of search results.");
             }
           }
         );
@@ -203,46 +175,24 @@ class App extends Component {
 
               if (images.length >= totalImages) {
                 Notiflix.Notify.info(
-                  "We're sorry, but you've reached the end of search results."
+                  "You've reached the end of search results."
                 );
               }
             }
           }
         );
       }
-
-      console.log('images: ', images);
     } catch (error) {
-      this.setState(
-        {
-          error,
-        },
-        () => {
-          console.log('ERROR: ', error);
-        }
-      );
+      this.setState({
+        error,
+      });
     } finally {
-      this.setState(
-        {
-          isLoading: false,
-          isLoadingNew: false,
-        },
-        () => {
-          console.log('Final data: ', this.state.images);
-        }
-      );
+      this.setState({
+        isLoading: false,
+        isLoadingNew: false,
+      });
     }
   };
-
-  // async componentDidMount() {
-  //   console.log('DidMount');
-  //   await this.getImages();
-  // }
-
-  // async componentDidUpdate() {
-  //   console.log('DidUpdate');
-  //   await this.getImages();
-  // }
 
   render() {
     const {

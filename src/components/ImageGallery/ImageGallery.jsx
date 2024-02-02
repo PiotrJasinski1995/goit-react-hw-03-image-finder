@@ -17,6 +17,10 @@ class ImageGallery extends Component {
     this.setState({ scrollPos });
   };
 
+  componentWillUnmount() {
+    window.removeEventListener('scroll', this.handleScroll);
+  }
+
   handleUpButtonClick = () => {
     document.body.scrollIntoView({
       behavior: 'smooth',
