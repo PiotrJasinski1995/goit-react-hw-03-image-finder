@@ -5,6 +5,7 @@ export const StyledImage = styled.img`
   height: 100%;
   object-fit: cover;
   transition: scale var(--animation-duration) var(--timing-function);
+  cursor: zoom-in;
 
   &:hover {
     scale: 1.05;
